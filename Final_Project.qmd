@@ -114,8 +114,9 @@ coef(df_LASSO_cv, s = "lambda.1se")
 ```
 
 ```{r}
-df.lm = glm(diagnosis ~ radius_mean + texture_mean + smoothness_mean + `concave points_mean` + smoothness_mean
-              , data = df, family = binomial(link = 'logit'))
+df.lm = glm(diagnosis ~ radius_mean + texture_mean + 
+              `concave points_mean` + smoothness_mean + symmetry_mean, 
+            data = df, family = binomial(link = 'logit'))
 summary(df.lm)
 vif(df.lm)
 ```
