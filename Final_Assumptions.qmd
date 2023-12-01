@@ -1,0 +1,55 @@
+---
+title: "Final Project Template"
+author: Dr. Petersen
+output: pdf_document
+---
+
+## Briefly, check the logistic regression model assumptions
+
+```{r}
+df_logistic <- glm(diagnosis ~ radius_mean + texture_mean + concave points_mean + 
+                               smoothness_mean + symmetry_mean, 
+                   data = df,
+                   family = binomial(link = "logit"))
+summary(df_logistic)
+```
+
+## LINEARITY: The x's vs log odds are linear (monotone in probability)
+
+```{r}
+scatter.smooth(x = df$radius_mean, y = as.numeric(df$diagnosis) - 1)
+scatter.smooth(x = df$texture_mean, y = as.numeric(df$diagnosis) - 1)
+scatter.smooth(x = df$concave points_mean, y = as.numeric(df$diagnosis) - 1)
+scatter.smooth(x = df$smoothness_mean, y = as.numeric(df$diagnosis) - 1)
+scatter.smooth(x = df$symmetry_mean, y = as.numeric(df$diagnosis) - 1)
+```
+
+None of our plots show extreme non-linearity. We may assume the x's vs log odds are linear.
+
+## INDEPENDENCE: The observations are independent
+Each of our values in the dataset has a unique ID number. We will assume that our observations are independent.
+
+
+## BERNOULLI: The response variable is Bernoulli
+Our response variable is modeled by a Bernoulli distribution, with the only possible outcomes being Malignant (True) and Benign (False). 
+
+
+## NO COUNFOUNDING VARIABLES: Additional predictor variables are not required
+We will assume that we have accounted for all variables of significance in our model.
+
+
+## INFLUENTIAL OBSERVATIONS: 
+```{r}
+plot(heart_logistic, which = 5)  # residuals vs leverage
+```
+
+None of our observations appear unduly influential based on our Cook's plot.
+
+## MULTICOLLINEARITY: No multicollinearity, using VIFs
+```{r}
+vif(df_lm)
+max(vif(df_lm))  # less than 10
+mean(vif(df_lm))  # less than 5
+```
+
+Our Variance Inflation Factors (VIFs) have a mean less than 5 and a maximum less than 10. We may assume there is no extreme multicollinearity in our model.
