@@ -96,7 +96,8 @@ df_y <- unlist(select(df, diagnosis) %>%
 df_LASSO_cv <- cv.glmnet(x = df_x, # automatically includes a column of ones for the intercept FYI
                           y = df_y, 
                           type.measure = "auc", 
-                          alpha = .5) # 0 is code for "ridge regression"
+                          alpha = .5, 
+                          family = 'binomial') # 0 is code for "ridge regression"
 
 # plot (log) lambda vs MSE
 autoplot(df_LASSO_cv, label = FALSE) +
@@ -114,10 +115,12 @@ coef(df_LASSO_cv, s = "lambda.1se")
 ```
 
 ```{r}
-df.lm = glm(diagnosis ~ radius_mean + texture_mean + 
+df.glm = glm(diagnosis ~ radius_mean + texture_mean + 
               `concave points_mean` + smoothness_mean + symmetry_mean, 
             data = df, family = binomial(link = 'logit'))
-summary(df.lm)
+df.lm <- lm(ifelse(diagnosis == 'M', 1, 0) ~ radius_mean + texture_mean + `concave points_mean` + smoothness_mean + symmetry_mean, data = df)
+
+summary(df.glm)
 vif(df.lm)
 ```
 

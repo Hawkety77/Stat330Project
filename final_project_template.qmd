@@ -26,6 +26,7 @@ library(bestglm)  # for variable selection
 library(car)  # for the VIFs
 library(pROC)  # for the ROC curve
 library(ROCR)  # for the color-coded ROC curve
+library(ggfortify)
 ```
 
 
@@ -54,6 +55,97 @@ Does the mean radius of a tumor have a significant relationship with its status 
 To answer the first question about prediction, we will mostly be relying on logistic regression and the techniques we learned during Module 7. We will also be using some predictive analytic techniques to see how well we are able to predict the malignancy of tumors. To answer the second question, we will also  be using logistic regression, specifically the output of our Generalized Logistic Regression model. We will be looking at the p-value of radius_mean to determine the answer to this question.
 
 # 2 Analyses, Results, and Interpretation
+
+```{r}
+df <- df %>%
+  mutate(diagnosis = as.factor(diagnosis)) %>%
+  select(diagnosis, radius_mean, texture_mean, perimeter_mean, area_mean, smoothness_mean, compactness_mean, concavity_mean, `concave points_mean`, symmetry_mean, fractal_dimension_mean)
+```
+
+## MULTICOLLINEARITY: No multicollinearity, using VIFs
+```{r}
+df.lm = glm(diagnosis ~ ., data = df, family = binomial(link = 'logit'))
+corrplot(cor(select(df, -diagnosis)), type = 'upper')
+vif(df.lm)
+```
+
+
+## LASSO Shrinkage Method
+
+```{r}
+df_x <- as.matrix(select(df, -diagnosis))
+df_y <- unlist(select(df, diagnosis) %>%
+                  mutate(diagnosis = ifelse(diagnosis == 'M', 1, 0)))
+
+df_LASSO_cv <- cv.glmnet(x = df_x, 
+                          y = df_y, 
+                          type.measure = "auc", 
+                          alpha = 1, 
+                          family = 'binomial')
+
+autoplot(df_LASSO_cv, label = FALSE) +
+  theme_bw() +
+  theme(aspect.ratio = 1)
+
+coef(df_LASSO_cv, s = "lambda.1se")
+```
+
+## Fit a new model
+```{r}
+df_logistic <- glm(diagnosis ~ radius_mean + texture_mean + `concave points_mean` + 
+                               smoothness_mean + symmetry_mean, 
+                   data = df,
+                   family = binomial(link = "logit"))
+summary(df_logistic)
+```
+
+## MULTICOLLINEARITY: No multicollinearity, using VIFs
+```{r}
+df_lm <- glm(diagnosis ~ radius_mean + texture_mean + `concave points_mean` + 
+                               smoothness_mean + symmetry_mean, 
+                   data = mutate(df, diagnosis = ifelse(diagnosis == 'M', 1, 0)))
+
+vif(df_lm)
+max(vif(df_lm))  # less than 10
+mean(vif(df_lm))  # less than 5
+```
+
+Our Variance Inflation Factors (VIFs) have a mean less than 5 and a maximum less than 10. We may assume there is no extreme multicollinearity in our model.
+
+## LINEARITY: The x's vs log odds are linear (monotone in probability)
+
+```{r}
+df_numeric <- mutate(df, diagnosis = ifelse(diagnosis == 'B', 0, 1))
+
+scatter.smooth(x = df_numeric$radius_mean, y = df_numeric$diagnosis + .0001)
+scatter.smooth(x = df$texture_mean, y = df_numeric$diagnosis)
+scatter.smooth(x = df$`concave points_mean`, y = df_numeric$diagnosis)
+scatter.smooth(x = df$smoothness_mean, y = df_numeric$diagnosis)
+scatter.smooth(x = df$symmetry_mean, y = df_numeric$diagnosis)
+```
+
+None of our plots show extreme non-linearity. We may assume the x's vs log odds are linear.
+
+## INDEPENDENCE: The observations are independent
+Each of our values in the dataset has a unique ID number. We will assume that our observations are independent.
+
+
+## BERNOULLI: The response variable is Bernoulli
+Our response variable is modeled by a Bernoulli distribution, with the only possible outcomes being Malignant (True) and Benign (False). 
+
+
+## NO COUNFOUNDING VARIABLES: Additional predictor variables are not required
+We will assume that we have accounted for all variables of significance in our model.
+
+
+## INFLUENTIAL OBSERVATIONS: 
+```{r}
+plot(df_logistic, which = 5)  # residuals vs leverage
+```
+
+None of our observations appear unduly influential based on our Cook's plot.
+
+
 
 Conduct the analysis in a logical fashion, including necessary code (and not any superfluous code) and its output.  Give simple interpretations of your findings related to the questions of interest.
 

@@ -19,7 +19,7 @@ summary(df_logistic)
 ```{r}
 scatter.smooth(x = df$radius_mean, y = as.numeric(df$diagnosis) - 1)
 scatter.smooth(x = df$texture_mean, y = as.numeric(df$diagnosis) - 1)
-scatter.smooth(x = df$concave points_mean, y = as.numeric(df$diagnosis) - 1)
+scatter.smooth(x = df$`concave points_mean`, y = as.numeric(df$diagnosis) - 1)
 scatter.smooth(x = df$smoothness_mean, y = as.numeric(df$diagnosis) - 1)
 scatter.smooth(x = df$symmetry_mean, y = as.numeric(df$diagnosis) - 1)
 ```
