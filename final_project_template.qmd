@@ -39,7 +39,7 @@ set.seed(38)
 
 # Abstract
 
-This study employs logistic regression to model the relationship between the diagnosis of a tumor as either malignant, or benign, and some selected features including the mean radius and texture of the tumor. After performing a LASSO variable selection, the logistic regression model yields coefficients for radius_mean (Estimate = 0.65634, p-value < 0.001), texture_mean (Estimate = 0.32593, p-value < 0.001), and concave points_mean (Estimate = 1.01166, p-value < 0.001). Tuning the cutoff threshold lead to an estimated (90%) sentitivity and (97%) specificity in our best model.
+This study employs logistic regression to model the relationship between the diagnosis of a tumor as either malignant, or benign, and some selected features including the mean radius and texture of the tumor. After performing a LASSO variable selection, the logistic regression model yields coefficients for radius_mean (Estimate = 0.65634, p-value < 0.001), texture_mean (Estimate = 0.32593, p-value < 0.001), and concave points_mean (Estimate = 1.01166, p-value < 0.001). Tuning the cutoff threshold lead to an estimated (90%) sensitivity and (97%) specificity in our best model.
 
 # 1 Problem and Motivation
 
@@ -67,26 +67,29 @@ df <- df %>%
 
 ## Exploratory Data Analysis 
 ```{r}
-create_boxplot <- function(predictor) {
+create_boxplot <- function(predictor, label) {
   plot <- ggplot(data = df) +
     geom_boxplot(mapping = aes(y = predictor, x = diagnosis)) +
+    labs(y = label) +
     coord_flip()
   plot
 }
 
-plot1 <- create_boxplot(df$radius_mean)
-plot2 <- create_boxplot(df$texture_mean)
-plot3 <- create_boxplot(df$perimeter_mean)
-plot4 <- create_boxplot(df$area_mean)
-plot5 <- create_boxplot(df$smoothness_mean)
-plot6 <- create_boxplot(df$compactness_mean)
-plot7 <- create_boxplot(df$concavity_mean)
-plot8 <- create_boxplot(df$`concave points_mean`)
-plot9 <- create_boxplot(df$symmetry_mean)
-plot10 <- create_boxplot(df$fractal_dimension_mean)
+plot1 <- create_boxplot(df$radius_mean, "radius_mean")
+plot2 <- create_boxplot(df$texture_mean, "texture_mean")
+plot3 <- create_boxplot(df$perimeter_mean, "perimeter_mean")
+plot4 <- create_boxplot(df$area_mean, "area_mean")
+plot5 <- create_boxplot(df$smoothness_mean, "smoothness_mean")
+plot6 <- create_boxplot(df$compactness_mean, "compactness_mean")
+plot7 <- create_boxplot(df$concavity_mean, "concavity_mean")
+plot8 <- create_boxplot(df$`concave points_mean`, "concave_points_mean")
+plot9 <- create_boxplot(df$symmetry_mean, "symmetry_mean")
+plot10 <- create_boxplot(df$fractal_dimension_mean, "fractal_dimension_mean")
 
 plot1 + plot2 + plot3 + plot4 + plot5 + plot6 + plot7 + plot8 + plot9 + plot10
 ```
+
+It appears from our EDA that most predictors are more likely to be associated with a "Malignant" diagnosis as they increase. The ones that don't show a strong association are fractal_dimension_mean, symmetry_mean, and smoothness_mean. Mean concave points, area mean, and radius mean all seem to have strong association with a "Malignant" diagnosis.
 
 ## No multicollinearity (using VIFs)
 ```{r}
