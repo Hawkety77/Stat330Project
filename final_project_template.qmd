@@ -27,6 +27,7 @@ library(car)  # for the VIFs
 library(pROC)  # for the ROC curve
 library(ROCR)  # for the color-coded ROC curve
 library(ggfortify)
+library(patchwork)
 ```
 
 
